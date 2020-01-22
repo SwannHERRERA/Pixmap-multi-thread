@@ -4,8 +4,20 @@ Objectif: Ouvrir un fichier ppm le lire avec plusieur thread voir syllabus
 Date: 13/01/2020
 */
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <glib.h>
+#include <gtk/gtk.h>
 
-int
-main (int argc, char** argv) {
+#include "readPPM.h"
 
+int main(int argc, char **argv) {
+    if (argc != 2) {
+        fprintf(stderr, "Wrong number of arguments !");
+        return EXIT_FAILURE;
+    } else {
+        char filePath[strlen(argv[1])];
+        strcpy(filePath, argv[1]);
+        image_t *img = readPPM(filePath);
+    }
 }
