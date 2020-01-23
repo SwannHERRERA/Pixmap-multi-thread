@@ -5,16 +5,22 @@
 #ifndef PIXMAP_MULTI_THREAD_READPPM_H
 #define PIXMAP_MULTI_THREAD_READPPM_H
 
+
 typedef struct {
-    guint8 red;
-    guint8 green;
-    guint8 blue;
+    uint8_t red;
+    uint8_t green;
+    uint8_t blue;
 } pixel_t;
 
 typedef struct {
     int x, y;
     pixel_t *data;
 } image_t;
+
+pixel_t pixel_new(uint8_t red, uint8_t green, uint8_t blue) {
+    pixel_t pixel;
+
+}
 
 image_t *readPPM(const char *fileName) {
     char buff[16];

@@ -7,6 +7,7 @@ Date: 13/01/2020
 #include <stdlib.h>
 #include <string.h>
 #include <glib.h>
+#include <stdint.h>
 #include <gtk/gtk.h>
 #include <libgen.h>
 
