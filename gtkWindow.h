@@ -7,7 +7,7 @@
 void free_pixels(guchar *pixels, gpointer data) {
     free(pixels);
 }
-void showImage(image_t *img, char *fileName, int argc, char **argv) {
+void showImage(ppm_image_t *img, char *fileName, int argc, char **argv) {
     int i, j;
     GtkImage *image;
     GtkWidget *window;
@@ -17,7 +17,7 @@ void showImage(image_t *img, char *fileName, int argc, char **argv) {
 
     window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
     gtk_window_set_position(GTK_WINDOW(window), GTK_WIN_POS_CENTER);
-    gtk_window_set_default_size(GTK_WINDOW(window), img->y, img->x);
+    gtk_window_set_default_size(GTK_WINDOW(window), img->width, img->height);
     gtk_window_set_title(GTK_WINDOW(window), fileName);
     gtk_window_set_resizable(GTK_WINDOW(window), FALSE);
     gtk_container_set_border_width(GTK_CONTAINER(window), 2);
@@ -27,17 +27,17 @@ void showImage(image_t *img, char *fileName, int argc, char **argv) {
 
 
     guchar *rgb;
-    rgb = malloc(img->y * img->x * 3);
+    rgb = malloc(img->width * img->height * 3);
 
-    for (i = 0; i < img->x; i++) {
-        for (j = 0; j < img->y; j++) {
+    for (i = 0; i < img->height; i++) {
+        for (j = 0; j < img->width; j++) {
             rgb[i * j * 3] = img->data[i * j].red;
             rgb[i * j * 3 + 1] = img->data[i * j].green;
             rgb[i * j * 3 + 2] = img->data[i * j].blue;
         }
     }
 
-    pb = gdk_pixbuf_new_from_data(rgb, GDK_COLORSPACE_RGB, 0, 8, img->y, img->x, 255, free_pixels,
+    pb = gdk_pixbuf_new_from_data(rgb, GDK_COLORSPACE_RGB, 0, 8, img->width, img->height, 255, free_pixels,
                                   NULL);
     image = GTK_IMAGE(gtk_image_new_from_pixbuf(pb));
     gtk_container_add(GTK_CONTAINER(window), GTK_WIDGET(image));
