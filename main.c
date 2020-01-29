@@ -31,8 +31,8 @@ int main(int argc, char **argv) {
                "Height: %d\n"
                "Lenght: %llu\n\n", basename(filePath), img->width, img->height, img->lenght);
 
-        printf("Reading pixel i:5, j:0\n");
-        pixel_t pixel = ppm_pixel(img, 5, 0);
+        printf("Reading pixel x:5, y:128\n");
+        pixel_t pixel = ppm_pixel(img, 5, 128);
         printf("Done!\n"
                "Pixel: {\n"
                "   red: %d,\n"
@@ -45,14 +45,25 @@ int main(int argc, char **argv) {
         printf("Done!\n"
                "Black pixel count in ppm image: %llu\n\n", nb_black_pixels);
 
-        printf("Counting black pixels flexible...\n");
-        size_t nb_black_pixels_flex = ppm_black_pixels_flex(img);
+        printf("Counting black pixels flexible (10 accuracy)...\n");
+        size_t nb_black_pixels_flex = ppm_black_pixels_flex(img, 10);
         printf("Done!\n"
-               "Flexible black pixel count in ppm image: %llu\n", nb_black_pixels_flex);
+               "Flexible black pixel count in ppm image: %llu\n\n", nb_black_pixels_flex);
 
+        printf("Converting image's pixel to negatif...\n");
+        ppm_negatif(img);
+        printf("Done!\n\n");
 
+        printf("Saving new negatif image...\n");
+        ppm_image_save(filePath, img);
+        printf("Done!\n\n");
+
+        printf("Releasing memory...\n");
         free(filePath);
         free(img->data);
         free(img);
+        printf("Done!\n\n"
+               "Closing program");
+        return EXIT_SUCCESS;
     }
 }
