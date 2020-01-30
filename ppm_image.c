@@ -93,18 +93,20 @@ ppm_image_t *ppm_malloc(const char *pathname) {
         exit(1);
     }
 
-    fgets(buff, sizeof(buff), fp);
+    fscanf(fp, "%c%c", buff, buff + 1);
     if (buff[0] != 'P' || buff[1] != '6') {
         fprintf(stderr, "Wrong format !\n");
         exit(1);
     }
 
     img = malloc(sizeof(ppm_image_t));
+    getc(fp);
 
     fscanf(fp, "%d %d", &img->height, &img->width);
     img->lenght = img->height * img->width;
 
-    while (getc(fp) != '\n');
+    getc(fp);
+
     while (getc(fp) != '\n');
 
     img->data = malloc(img->height * img->width * sizeof(pixel_t));
