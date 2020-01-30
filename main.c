@@ -6,14 +6,10 @@ Date: 13/01/2020
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <stdbool.h>
-#include <glib.h>
 #include <stdint.h>
-#include <gtk/gtk.h>
 #include <libgen.h>
 
-#include "readPPM.h"
-#include "gtkWindow.h"
+#include "ppm_image.h"
 
 int main(int argc, char **argv) {
     if (argc != 2) {
@@ -29,7 +25,7 @@ int main(int argc, char **argv) {
                "Name: %s\n"
                "Width: %d\n"
                "Height: %d\n"
-               "Lenght: %llu\n\n", basename(filePath), img->width, img->height, img->lenght);
+               "Lenght: %zu\n\n", basename(filePath), img->width, img->height, img->lenght);
 
         printf("Reading pixel x:5, y:128\n");
         pixel_t pixel = ppm_pixel(img, 5, 128);
@@ -43,12 +39,12 @@ int main(int argc, char **argv) {
         printf("Counting black pixels...\n");
         size_t nb_black_pixels = ppm_black_pixels(img);
         printf("Done!\n"
-               "Black pixel count in ppm image: %llu\n\n", nb_black_pixels);
+               "Black pixel count in ppm image: %zu\n\n", nb_black_pixels);
 
         printf("Counting black pixels flexible (10 accuracy)...\n");
         size_t nb_black_pixels_flex = ppm_black_pixels_flex(img, 10);
         printf("Done!\n"
-               "Flexible black pixel count in ppm image: %llu\n\n", nb_black_pixels_flex);
+               "Flexible black pixel count in ppm image: %zu\n\n", nb_black_pixels_flex);
 
         printf("Converting image's pixel to negatif...\n");
         ppm_negatif(img);
