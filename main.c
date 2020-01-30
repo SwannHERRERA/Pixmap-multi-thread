@@ -1,19 +1,19 @@
-/*
-Author: Joëlle Castelli, Noé Larrieu-Lacoste, Swann HERRERA
-Objectif: Ouvrir un fichier ppm le lire avec plusieur thread voir syllabus
-Date: 13/01/2020
-*/
+/* Authors: Joëlle CASTELLI, Noé LARRIEU-LACOSTE, Swann HERRERA
+Objectives :
+        - multithreaded count of total the number of black pixels
+        - creating and saving a negative version of the image
+Date: 13/01/2020 */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <stdint.h>
 #include <libgen.h>
-
 #include "ppm_image.h"
 
 int main(int argc, char **argv) {
-    if (argc != 2) {
-        fprintf(stderr, "Wrong number of arguments !");
+    if (argc != 2) { // Check the number of arguments (only one expected)
+        fprintf(stderr, "Wrong number of arguments!");
         return EXIT_FAILURE;
     } else {
         char *filePath = malloc(strlen(argv[1]));
@@ -25,7 +25,7 @@ int main(int argc, char **argv) {
                "Name: %s\n"
                "Width: %d\n"
                "Height: %d\n"
-               "Lenght: %zu\n\n", basename(filePath), img->width, img->height, img->lenght);
+               "totalPixels: %zu\n\n", basename(filePath), img->width, img->height, img->totalPixels);
 
         printf("Reading pixel x:5, y:128\n");
         pixel_t pixel = ppm_pixel(img, 5, 128);
@@ -36,21 +36,21 @@ int main(int argc, char **argv) {
                "   blue: %d\n"
                "};\n\n", pixel.red, pixel.green, pixel.blue);
 
-        printf("Counting black pixels...\n");
+        printf("Counting total number of black pixels...\n");
         size_t nb_black_pixels = ppm_black_pixels(img);
         printf("Done!\n"
-               "Black pixel count in ppm image: %zu\n\n", nb_black_pixels);
+               "Total number of black pixels in ppm image: %zu\n\n", nb_black_pixels);
 
-        printf("Counting black pixels flexible (10 accuracy)...\n");
+        printf("Flexible counting total number of black pixels (10 accuracy)...\n");
         size_t nb_black_pixels_flex = ppm_black_pixels_flex(img, 10);
         printf("Done!\n"
-               "Flexible black pixel count in ppm image: %zu\n\n", nb_black_pixels_flex);
+               "Total number of black and black-ish pixels in ppm image: %zu\n\n", nb_black_pixels_flex);
 
-        printf("Converting image's pixel to negatif...\n");
-        ppm_negatif(img);
+        printf("Converting image's pixels to negative...\n");
+        ppm_negative(img);
         printf("Done!\n\n");
 
-        printf("Saving new negatif image...\n");
+        printf("Saving new negative image...\n");
         ppm_image_save(filePath, img);
         printf("Done!\n\n");
 
