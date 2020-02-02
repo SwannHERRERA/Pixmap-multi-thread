@@ -5,6 +5,7 @@
 #include <string.h>
 #include <stdbool.h>
 #include <stdint.h>
+#include <pthread.h>
 
 // Structure representing a pixel
 // uint8_t because the intensity goes from 0 to 255 : 8 bits
@@ -39,5 +40,8 @@ pixel_t pixel_invert(const pixel_t *p);
 ppm_image_t *ppm_malloc(const char *pathname);
 void ppm_image_save(const char *pathname, const ppm_image_t *img);
 void ppm_negative(ppm_image_t *img);
+
+size_t ppm_black_pixels_T0(const ppm_image_t *img);
+void* ppm_black_pixels_T1 ();
 
 #endif //PIXMAP_MULTI_THREAD_PPM_IMAGE_H

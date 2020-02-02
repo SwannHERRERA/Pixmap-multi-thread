@@ -196,3 +196,37 @@ void ppm_negative(ppm_image_t *img) {
         img->data[i].blue = pixel.blue;
     }
 }
+
+// Thread 0 function : count first half of black pixels
+size_t ppm_black_pixels_T0(const ppm_image_t *img) {
+    pixel_t blackPixel = pixel_new(0, 0, 0);
+    size_t nb_black_pixels_T0 = 0;
+    for (int i = 0; i < (img->totalPixels) / 2; ++i) {
+        if (pixel_equals(&img->data[i], &blackPixel))
+            nb_black_pixels_T0++;
+    }
+    return nb_black_pixels_T0;
+}
+
+// Thread 1 function : count second half of black pixels
+void* ppm_black_pixels_T1() {
+
+    printf("New thread created!\n");
+
+    // Get the img structure
+    extern ppm_image_t *img;
+
+    // Get the counter nb_black_pixels_T1
+    extern size_t nb_black_pixels1;
+
+    // Count half of image and increase counter
+    printf("Counting second half of black pixels with T1...\n");
+    pixel_t blackPixel = pixel_new(0, 0, 0);
+    for (int i = (img->totalPixels) / 2; i < img->totalPixels; i) {
+        if (pixel_equals(&img->data[i], &blackPixel))
+            nb_black_pixels1++;
+    }
+
+    // End of the thread
+    pthread_exit(NULL);
+}
