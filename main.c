@@ -46,27 +46,41 @@ int main(int argc, char **argv) {
         printf("Done!\n"
                "Total number of black and black-ish pixels in ppm image: %zu\n\n", nb_black_pixels_flex);
 
-        /* COUNT WITH TWO THREADS */
-
         printf("Counting first half of black pixels with T0...\n");
-        size_t nb_black_pixels0 = ppm_black_pixels_T0(img);
-        size_t nb_black_pixels1 = 0;
+        pixels_count black_pixels;
+        black_pixels.count_T0 = ppm_black_pixels_T0(img);
         printf("Done!\n"
-               "First half of black pixels in ppm image: %zu\n\n", nb_black_pixels0);
+               "First half of black pixels in ppm image with T0: %zu\n\n", black_pixels.count_T0);
 
-        //arg1 : pointeur vers l'identifiant du thread (pthread_t)
-        //arg2 : attributs du thread (joignable, détaché, politique d'ordonnancement usuelle ou temps-réel... = NULL)
-        //arg3 : pointeur vers la fonction à exécuter : doit être void* fonction(void* arg)
-        //arg4 : argument à passer au thread.
+        // Thread 1 function : count second half of black pixels
+        void* ppm_black_pixels_T1 (void* arg) {
+            printf("New thread created!\n");
+
+            // Count half of image and increase the T1 counter
+            printf("Counting second half of black pixels with T1...\n");
+            pixel_t blackPixel = pixel_new(0, 0, 0);
+            for (size_t i = (img->totalPixels) / 2; i < img->totalPixels; i++) {
+                if (pixel_equals(&img->data[i], &blackPixel))
+                    black_pixels.count_T1++;
+            }
+
+            printf("Done!\n"
+                   "Second half of black pixels in ppm image with T1: %zu\n\n", black_pixels.count_T1);
+
+            // End of the thread
+            pthread_exit(NULL);
+        }
+
         pthread_t thread1;
         printf("Creating new thread...\n");
-        if(pthread_create(&thread1, NULL, ppm_black_pixels_T1, (void*)NULL) == -1) {
+        black_pixels.count_T1 = 0;
+        if(pthread_create(&thread1, NULL, ppm_black_pixels_T1, (void*)NULL)) {
             fprintf(stderr, "Cannot create new thread\n");
             return EXIT_FAILURE;
         }
 
-
-        /* END */
+        black_pixels.total = black_pixels.count_T0 + black_pixels.count_T1;
+        printf("Total of black pixels in ppm image: %zu\n\n", black_pixels.total);
 
         printf("Converting image's pixels to negative...\n");
         ppm_negative(img);

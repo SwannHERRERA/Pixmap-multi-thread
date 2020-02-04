@@ -22,6 +22,12 @@ typedef struct {
     pixel_t *data; // dynamic array of pixels
 } ppm_image_t;
 
+typedef struct pixels_count {
+    size_t count_T0;
+    size_t count_T1;
+    size_t total;
+} pixels_count;
+
 // Signatures
 bool pixel_equals(const pixel_t *self, const pixel_t *other);
 bool pixel_equals_flex(const pixel_t *p, const pixel_t *pbis, int accuracy);
@@ -33,6 +39,8 @@ int ppm_image_t_height(const ppm_image_t *ppmImage);
 size_t ppm_image_t_totalPixels(const ppm_image_t *ppmImage);
 size_t ppm_black_pixels(const ppm_image_t *img);
 size_t ppm_black_pixels_flex(const ppm_image_t *img, int accuracy);
+size_t ppm_black_pixels_T0(const ppm_image_t *img);
+void* ppm_black_pixels_T1 (void* arg);
 pixel_t pixel_new(uint8_t red, uint8_t green, uint8_t blue);
 pixel_t *ppm_image_t_data(const ppm_image_t *ppmImage);
 pixel_t ppm_pixel(const ppm_image_t *img, size_t x, size_t y);
@@ -40,8 +48,5 @@ pixel_t pixel_invert(const pixel_t *p);
 ppm_image_t *ppm_malloc(const char *pathname);
 void ppm_image_save(const char *pathname, const ppm_image_t *img);
 void ppm_negative(ppm_image_t *img);
-
-size_t ppm_black_pixels_T0(const ppm_image_t *img);
-void* ppm_black_pixels_T1 ();
 
 #endif //PIXMAP_MULTI_THREAD_PPM_IMAGE_H
