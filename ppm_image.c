@@ -80,7 +80,7 @@ pixel_t *ppm_image_t_data(const ppm_image_t *ppmImage) {
 pixel_t ppm_pixel(const ppm_image_t *img, size_t x, size_t y) {
     if (x >= img->height || y >= img->width) {
         fprintf(stderr, "Error! x,y out of range!\n");
-        exit(1);
+        exit(EXIT_FAILURE);
     }
     return img->data[x + img->width * y];
 }
@@ -195,15 +195,4 @@ void ppm_negative(ppm_image_t *img) {
         img->data[i].green = pixel.green;
         img->data[i].blue = pixel.blue;
     }
-}
-
-// Thread 0 function : count first half of black pixels
-size_t ppm_black_pixels_T0(const ppm_image_t *img) {
-    pixel_t blackPixel = pixel_new(0, 0, 0);
-    size_t nb_black_pixels_T0 = 0;
-    for (int i = 0; i < (img->totalPixels) / 2; ++i) {
-        if (pixel_equals(&img->data[i], &blackPixel))
-            nb_black_pixels_T0++;
-    }
-    return nb_black_pixels_T0;
 }

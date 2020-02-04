@@ -22,9 +22,10 @@ typedef struct {
     pixel_t *data; // dynamic array of pixels
 } ppm_image_t;
 
+// Structure for the multithreaded count of black pixels
 typedef struct pixels_count {
-    size_t count_T0;
     size_t count_T1;
+    size_t count_T2;
 } pixels_count;
 
 // Signatures
@@ -38,8 +39,8 @@ int ppm_image_t_height(const ppm_image_t *ppmImage);
 size_t ppm_image_t_totalPixels(const ppm_image_t *ppmImage);
 size_t ppm_black_pixels(const ppm_image_t *img);
 size_t ppm_black_pixels_flex(const ppm_image_t *img, int accuracy);
-size_t ppm_black_pixels_T0(const ppm_image_t *img);
 void* ppm_black_pixels_T1 (void* arg);
+void* ppm_black_pixels_T2 (void* arg);
 pixel_t pixel_new(uint8_t red, uint8_t green, uint8_t blue);
 pixel_t *ppm_image_t_data(const ppm_image_t *ppmImage);
 pixel_t ppm_pixel(const ppm_image_t *img, size_t x, size_t y);
