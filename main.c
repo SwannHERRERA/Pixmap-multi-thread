@@ -54,7 +54,7 @@ int main(int argc, char **argv) {
 
         // Thread 1 function : count second half of black pixels
         void* ppm_black_pixels_T1 (void* arg) {
-            printf("New thread created!\n");
+            printf("New thread created!\n\n");
 
             // Count half of image and increase the T1 counter
             printf("Counting second half of black pixels with T1...\n");
@@ -79,8 +79,13 @@ int main(int argc, char **argv) {
             return EXIT_FAILURE;
         }
 
-        black_pixels.total = black_pixels.count_T0 + black_pixels.count_T1;
-        printf("Total of black pixels in ppm image: %zu\n\n", black_pixels.total);
+        // Waiting for T1 to finish
+        if(pthread_join(thread1, NULL)) {
+            fprintf(stderr, "Cannot wait for thread 1 to finish.\n");
+            return EXIT_FAILURE;
+        }
+
+        printf("Multithreaded total of black pixels in ppm image: %zu\n\n", black_pixels.count_T0 + black_pixels.count_T1);
 
         printf("Converting image's pixels to negative...\n");
         ppm_negative(img);
