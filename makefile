@@ -5,4 +5,4 @@ dev: build start
 build:
 	$(CC) $(CFLAGS) -o executable.out main.c ppm_image.c -pthread
 start:
-	./executable.out Baboon.512.ppm
+	./executable.out dark.ppm
