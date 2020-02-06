@@ -26,6 +26,8 @@ typedef struct {
 typedef struct pixels_count {
     size_t count_T1;
     size_t count_T2;
+    size_t flex_count_T1;
+    size_t flex_count_T2;
 } pixels_count;
 
 // Signatures

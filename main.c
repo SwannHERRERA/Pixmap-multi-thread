@@ -27,7 +27,7 @@ int main(int argc, char **argv) {
                "Height: %d\n"
                "totalPixels: %zu\n\n", basename(filePath), img->width, img->height, img->totalPixels);
 
-        printf("Reading pixel x:5, y:128\n");
+        printf("Reading pixel x:5, y:128...\n");
         pixel_t pixel = ppm_pixel(img, 5, 128);
         printf("Done!\n"
                "Pixel: {\n"
@@ -51,11 +51,14 @@ int main(int argc, char **argv) {
         pixels_count black_pixels;
         black_pixels.count_T1 = 0;
         black_pixels.count_T2 = 0;
+        black_pixels.flex_count_T1 = 0;
+        black_pixels.flex_count_T2 = 0;
 
         // Thread 1 function : count first half of black pixels
         void* ppm_black_pixels_T1(void* arg) {
             printf("T1 created!\n"
                     "Counting first half of black pixels with T1...\n");
+
             pixel_t blackPixel = pixel_new(0, 0, 0);
             for (int i = 0; i < (img->totalPixels) / 2; i++) {
                 if (pixel_equals(&img->data[i], &blackPixel))
@@ -63,6 +66,14 @@ int main(int argc, char **argv) {
             }
             printf("T1 first half count: done!\n"
                    "First half of black pixels in ppm image with T1: %zu\n\n", black_pixels.count_T1);
+
+            printf("Counting first half of black-ish pixels with T1 (accuracy = 10)...\n");
+            for (int i = 0; i < (img->totalPixels) / 2; i++) {
+                if (pixel_equals_flex(&img->data[i], &blackPixel, 10))
+                    black_pixels.flex_count_T1++;
+            }
+            printf("T1 first half flex count: done!\n"
+                   "First half of black-ish pixels in ppm image with T1 (accuracy = 10): %zu\n\n", black_pixels.flex_count_T1);
 
             // End of the thread
             pthread_exit(NULL);
@@ -72,6 +83,7 @@ int main(int argc, char **argv) {
         void* ppm_black_pixels_T2 (void* arg) {
             printf("T2 created!\n"
                    "Counting first half of black pixels with T2...\n");
+
             pixel_t blackPixel = pixel_new(0, 0, 0);
             for (size_t i = (img->totalPixels) / 2; i < img->totalPixels; i++) {
                 if (pixel_equals(&img->data[i], &blackPixel))
@@ -79,6 +91,15 @@ int main(int argc, char **argv) {
             }
             printf("T2 second half count: done!\n"
                    "Second half of black pixels in ppm image with T2: %zu\n\n", black_pixels.count_T1);
+
+            printf("Counting second half of black-ish pixels with T2 (accuracy = 10)...\n");
+            for (size_t i = (img->totalPixels) / 2; i < img->totalPixels; i++) {
+                if (pixel_equals_flex(&img->data[i], &blackPixel, 10))
+                    black_pixels.flex_count_T2++;
+            }
+            printf("T2 first half flex count: done!\n"
+                   "Second half of black-ish pixels in ppm image with T2 (accuracy = 10): %zu\n\n", black_pixels.flex_count_T2);
+
             // End of the thread
             pthread_exit(NULL);
         }
@@ -125,7 +146,7 @@ int main(int argc, char **argv) {
         free(img);
         printf("Done!\n\n"
                "Closing program");
-        
+
         return EXIT_SUCCESS;
     }
 }
