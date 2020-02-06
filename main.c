@@ -7,9 +7,9 @@ Date: 13/01/2020 */
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <stdint.h>
 #include <libgen.h>
 #include "ppm_image.h"
+
 
 int main(int argc, char **argv) {
     if (argc != 2) { // Check the number of arguments (only one expected)
@@ -27,7 +27,7 @@ int main(int argc, char **argv) {
                "Height: %d\n"
                "totalPixels: %zu\n\n", basename(filePath), img->width, img->height, img->totalPixels);
 
-        printf("Reading pixel x:5, y:128\n");
+        printf("Reading pixel x:5, y:128...\n");
         pixel_t pixel = ppm_pixel(img, 5, 128);
         printf("Done!\n"
                "Pixel: {\n"
@@ -41,10 +41,60 @@ int main(int argc, char **argv) {
         printf("Done!\n"
                "Total number of black pixels in ppm image: %zu\n\n", nb_black_pixels);
 
-        printf("Flexible counting total number of black pixels (10 accuracy)...\n");
+        printf("Flexible counting total number of black pixels (accuracy = 10)...\n");
         size_t nb_black_pixels_flex = ppm_black_pixels_flex(img, 10);
         printf("Done!\n"
                "Total number of black and black-ish pixels in ppm image: %zu\n\n", nb_black_pixels_flex);
+
+
+        // Structure that stocks the number of black pixels calculated by each new thread
+        pixels_count black_pixels;
+        black_pixels.count_T1 = 0;
+        black_pixels.count_T2 = 0;
+        black_pixels.flex_count_T1 = 0;
+        black_pixels.flex_count_T2 = 0;
+
+        args arguments = {img, &black_pixels};
+        // Thread 1 function : count first half of black pixels
+
+        pthread_t thread1;
+        pthread_t thread2;
+        printf("Creating new threads...\n");
+
+        if (pthread_create(&thread1, NULL, &ppm_black_pixels_T1, (void *) &arguments)) {
+            fprintf(stderr, "Cannot create new thread : T1\n");
+            return EXIT_FAILURE;
+        }
+
+        if (pthread_create(&thread2, NULL, &ppm_black_pixels_T2, (void *) &arguments)) {
+            fprintf(stderr, "Cannot create new thread : T2\n");
+            return EXIT_FAILURE;
+        }
+
+        // Waiting for T1 to finish
+        if (pthread_join(thread1, NULL)) {
+            fprintf(stderr, "Cannot wait for thread 1 to finish.\n");
+            return EXIT_FAILURE;
+        }
+
+        // Waiting for T2 to finish
+        if (pthread_join(thread2, NULL)) {
+            fprintf(stderr, "Cannot wait for thread 2 to finish.\n");
+            return EXIT_FAILURE;
+        }
+
+        printf("\nFirst half of black pixels in ppm image with T1: %zu\n", black_pixels.count_T1);
+        printf("Second half of black pixels in ppm image with T2: %zu\n\n", black_pixels.count_T2);
+        printf("First half of black-ish pixels in ppm image with T1 (accuracy = 10): %zu\n",
+               black_pixels.flex_count_T1);
+        printf("Second half of black-ish pixels in ppm image with T2 (accuracy = 10): %zu\n\n",
+               black_pixels.flex_count_T2);
+
+
+        printf("Multithreaded total of black pixels in ppm image: %zu\n\n",
+               black_pixels.count_T1 + black_pixels.count_T2);
+        printf("Multithreaded total of black-ish pixels in ppm image (accuracy = 10): %zu\n\n",
+               black_pixels.flex_count_T1 + black_pixels.flex_count_T2);
 
         printf("Converting image's pixels to negative...\n");
         ppm_negative(img);
@@ -60,6 +110,7 @@ int main(int argc, char **argv) {
         free(img);
         printf("Done!\n\n"
                "Closing program");
+
         return EXIT_SUCCESS;
     }
 }

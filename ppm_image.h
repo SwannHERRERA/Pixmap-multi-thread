@@ -5,6 +5,7 @@
 #include <string.h>
 #include <stdbool.h>
 #include <stdint.h>
+#include <pthread.h>
 
 // Structure representing a pixel
 // uint8_t because the intensity goes from 0 to 255 : 8 bits
@@ -21,6 +22,19 @@ typedef struct {
     pixel_t *data; // dynamic array of pixels
 } ppm_image_t;
 
+// Structure for the multithreaded count of black pixels
+typedef struct pixels_count {
+    size_t count_T1;
+    size_t count_T2;
+    size_t flex_count_T1;
+    size_t flex_count_T2;
+} pixels_count;
+
+typedef struct {
+    ppm_image_t *img;
+    pixels_count *black_pixels;
+} args;
+
 // Signatures
 bool pixel_equals(const pixel_t *self, const pixel_t *other);
 bool pixel_equals_flex(const pixel_t *p, const pixel_t *pbis, int accuracy);
@@ -32,6 +46,8 @@ int ppm_image_t_height(const ppm_image_t *ppmImage);
 size_t ppm_image_t_totalPixels(const ppm_image_t *ppmImage);
 size_t ppm_black_pixels(const ppm_image_t *img);
 size_t ppm_black_pixels_flex(const ppm_image_t *img, int accuracy);
+void* ppm_black_pixels_T1 (void* arg);
+void* ppm_black_pixels_T2 (void* arg);
 pixel_t pixel_new(uint8_t red, uint8_t green, uint8_t blue);
 pixel_t *ppm_image_t_data(const ppm_image_t *ppmImage);
 pixel_t ppm_pixel(const ppm_image_t *img, size_t x, size_t y);

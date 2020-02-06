@@ -80,7 +80,7 @@ pixel_t *ppm_image_t_data(const ppm_image_t *ppmImage) {
 pixel_t ppm_pixel(const ppm_image_t *img, size_t x, size_t y) {
     if (x >= img->height || y >= img->width) {
         fprintf(stderr, "Error! x,y out of range!\n");
-        exit(1);
+        exit(EXIT_FAILURE);
     }
     return img->data[x + img->width * y];
 }
@@ -195,4 +195,57 @@ void ppm_negative(ppm_image_t *img) {
         img->data[i].green = pixel.green;
         img->data[i].blue = pixel.blue;
     }
+}
+
+void *ppm_black_pixels_T1(void *arg) {
+    args *arguments = (args *) arg;
+
+    printf("T1 created!\n"
+           "Counting first half of black pixels with T1...\n");
+
+    pixel_t blackPixel = pixel_new(0, 0, 0);
+    for (int i = 0; i < (arguments->img->totalPixels) / 2; i++) {
+        if (pixel_equals(&(arguments->img->data[i]), &blackPixel))
+            arguments->black_pixels->count_T1++;
+    }
+    printf("T1 first half count: done!\n");
+
+
+    printf("Counting first half of black-ish pixels with T1 (accuracy = 10)...\n");
+    for (int i = 0; i < (arguments->img->totalPixels) / 2; i++) {
+        if (pixel_equals_flex(&(arguments->img->data[i]), &blackPixel, 10))
+            arguments->black_pixels->flex_count_T1++;
+    }
+    printf("T1 first half flex count: done!\n");
+
+
+    // End of the thread
+    pthread_exit(NULL);
+}
+
+// Thread 2 function : count second half of black pixels
+void *ppm_black_pixels_T2(void *arg) {
+    args *arguments = (args *) arg;
+
+    printf("T2 created!\n"
+           "Counting first half of black pixels with T2...\n");
+
+    pixel_t blackPixel = pixel_new(0, 0, 0);
+    for (size_t i = (arguments->img->totalPixels) / 2; i < arguments->img->totalPixels; i++) {
+        if (pixel_equals(&(arguments->img->data[i]), &blackPixel))
+            arguments->black_pixels->count_T2++;
+    }
+    printf("T2 second half count: done!\n");
+
+
+    printf("Counting second half of black-ish pixels with T2 (accuracy = 10)...\n");
+    for (size_t i = (arguments->img->totalPixels) / 2; i < arguments->img->totalPixels; i++) {
+        if (pixel_equals_flex(&(arguments->img->data[i]), &blackPixel, 10))
+            arguments->black_pixels->flex_count_T2++;
+    }
+    printf("T2 first half flex count: done!\n");
+
+
+    // End of the thread
+    pthread_exit(NULL);
 }
