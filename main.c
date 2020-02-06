@@ -114,7 +114,7 @@ int main(int argc, char **argv) {
         free(img->data);
         free(img);
         printf("Done!\n\n"
-               "Closing program");
+               "Closing program\n");
 
         return EXIT_SUCCESS;
     }
