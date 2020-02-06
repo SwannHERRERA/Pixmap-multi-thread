@@ -30,6 +30,11 @@ typedef struct pixels_count {
     size_t flex_count_T2;
 } pixels_count;
 
+typedef struct {
+    ppm_image_t *img;
+    pixels_count *black_pixels;
+} args;
+
 // Signatures
 bool pixel_equals(const pixel_t *self, const pixel_t *other);
 bool pixel_equals_flex(const pixel_t *p, const pixel_t *pbis, int accuracy);

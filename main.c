@@ -7,9 +7,9 @@ Date: 13/01/2020 */
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <stdint.h>
 #include <libgen.h>
 #include "ppm_image.h"
+
 
 int main(int argc, char **argv) {
     if (argc != 2) { // Check the number of arguments (only one expected)
@@ -54,83 +54,47 @@ int main(int argc, char **argv) {
         black_pixels.flex_count_T1 = 0;
         black_pixels.flex_count_T2 = 0;
 
+        args arguments = {img, &black_pixels};
         // Thread 1 function : count first half of black pixels
-        void* ppm_black_pixels_T1(void* arg) {
-            printf("T1 created!\n"
-                    "Counting first half of black pixels with T1...\n");
-
-            pixel_t blackPixel = pixel_new(0, 0, 0);
-            for (int i = 0; i < (img->totalPixels) / 2; i++) {
-                if (pixel_equals(&img->data[i], &blackPixel))
-                    black_pixels.count_T1++;
-            }
-            printf("T1 first half count: done!\n"
-                   "First half of black pixels in ppm image with T1: %zu\n\n", black_pixels.count_T1);
-
-            printf("Counting first half of black-ish pixels with T1 (accuracy = 10)...\n");
-            for (int i = 0; i < (img->totalPixels) / 2; i++) {
-                if (pixel_equals_flex(&img->data[i], &blackPixel, 10))
-                    black_pixels.flex_count_T1++;
-            }
-            printf("T1 first half flex count: done!\n"
-                   "First half of black-ish pixels in ppm image with T1 (accuracy = 10): %zu\n\n", black_pixels.flex_count_T1);
-
-            // End of the thread
-            pthread_exit(NULL);
-        }
-
-        // Thread 2 function : count second half of black pixels
-        void* ppm_black_pixels_T2 (void* arg) {
-            printf("T2 created!\n"
-                   "Counting first half of black pixels with T2...\n");
-
-            pixel_t blackPixel = pixel_new(0, 0, 0);
-            for (size_t i = (img->totalPixels) / 2; i < img->totalPixels; i++) {
-                if (pixel_equals(&img->data[i], &blackPixel))
-                    black_pixels.count_T2++;
-            }
-            printf("T2 second half count: done!\n"
-                   "Second half of black pixels in ppm image with T2: %zu\n\n", black_pixels.count_T1);
-
-            printf("Counting second half of black-ish pixels with T2 (accuracy = 10)...\n");
-            for (size_t i = (img->totalPixels) / 2; i < img->totalPixels; i++) {
-                if (pixel_equals_flex(&img->data[i], &blackPixel, 10))
-                    black_pixels.flex_count_T2++;
-            }
-            printf("T2 first half flex count: done!\n"
-                   "Second half of black-ish pixels in ppm image with T2 (accuracy = 10): %zu\n\n", black_pixels.flex_count_T2);
-
-            // End of the thread
-            pthread_exit(NULL);
-        }
 
         pthread_t thread1;
         pthread_t thread2;
         printf("Creating new threads...\n");
 
-        if(pthread_create(&thread1, NULL, ppm_black_pixels_T1, (void*)NULL)) {
+        if (pthread_create(&thread1, NULL, &ppm_black_pixels_T1, (void *) &arguments)) {
             fprintf(stderr, "Cannot create new thread : T1\n");
             return EXIT_FAILURE;
         }
 
-        if(pthread_create(&thread2, NULL, ppm_black_pixels_T2, (void*)NULL)) {
+        if (pthread_create(&thread2, NULL, &ppm_black_pixels_T2, (void *) &arguments)) {
             fprintf(stderr, "Cannot create new thread : T2\n");
             return EXIT_FAILURE;
         }
 
         // Waiting for T1 to finish
-        if(pthread_join(thread1, NULL)) {
+        if (pthread_join(thread1, NULL)) {
             fprintf(stderr, "Cannot wait for thread 1 to finish.\n");
             return EXIT_FAILURE;
         }
 
         // Waiting for T2 to finish
-        if(pthread_join(thread2, NULL)) {
+        if (pthread_join(thread2, NULL)) {
             fprintf(stderr, "Cannot wait for thread 2 to finish.\n");
             return EXIT_FAILURE;
         }
 
-        printf("Multithreaded total of black pixels in ppm image: %zu\n\n", black_pixels.count_T1 + black_pixels.count_T2);
+        printf("\nFirst half of black pixels in ppm image with T1: %zu\n", black_pixels.count_T1);
+        printf("Second half of black pixels in ppm image with T2: %zu\n\n", black_pixels.count_T2);
+        printf("First half of black-ish pixels in ppm image with T1 (accuracy = 10): %zu\n",
+               black_pixels.flex_count_T1);
+        printf("Second half of black-ish pixels in ppm image with T2 (accuracy = 10): %zu\n\n",
+               black_pixels.flex_count_T2);
+
+
+        printf("Multithreaded total of black pixels in ppm image: %zu\n\n",
+               black_pixels.count_T1 + black_pixels.count_T2);
+        printf("Multithreaded total of black-ish pixels in ppm image (accuracy = 10): %zu\n\n",
+               black_pixels.flex_count_T1 + black_pixels.flex_count_T2);
 
         printf("Converting image's pixels to negative...\n");
         ppm_negative(img);
