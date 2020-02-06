@@ -1,8 +1,8 @@
 CC=gcc
 CFLAGS= -Wall -Wextra
 dev: build start
-# main.c
+
 build:
-	$(CC) $(CFLAGS) -o executable.out main.c ppm_image.c
+	$(CC) $(CFLAGS) -o executable.out main.c ppm_image.c -pthread
 start:
-	./executable.out
+	./executable.out Baboon.512.ppm
