@@ -1,8 +1,8 @@
 /* Authors: Joëlle CASTELLI, Noé LARRIEU-LACOSTE, Swann HERRERA
 Objectives :
-        - multithreaded count of total the number of black pixels
+        - multithreaded count of the total number of black and black-is pixels
         - creating and saving a negative version of the image
-Date: 13/01/2020 */
+Date: 06/02/2020 */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -46,26 +46,32 @@ int main(int argc, char **argv) {
         printf("Done!\n"
                "Total number of black and black-ish pixels in ppm image: %zu\n\n", nb_black_pixels_flex);
 
-
-        // Structure that stocks the number of black pixels calculated by each new thread
+        // Structure that stocks the number of black and black-ish pixels calculated by each new thread
         pixels_count black_pixels;
         black_pixels.count_T1 = 0;
         black_pixels.count_T2 = 0;
         black_pixels.flex_count_T1 = 0;
         black_pixels.flex_count_T2 = 0;
 
-        args arguments = {img, &black_pixels};
-        // Thread 1 function : count first half of black pixels
+        // Structure that holds the image and the black_pixels structure
+        // To be passed to the threads
+        thread_args arguments = {img, &black_pixels};
 
         pthread_t thread1;
         pthread_t thread2;
         printf("Creating new threads...\n");
 
+        // Creating thread 1
+        // Calling function ppm_black_pixels_T1
+        // Passing the address of the "arguments" structure, casted as void*
         if (pthread_create(&thread1, NULL, &ppm_black_pixels_T1, (void *) &arguments)) {
             fprintf(stderr, "Cannot create new thread : T1\n");
             return EXIT_FAILURE;
         }
 
+        // Creating thread 2
+        // Calling function ppm_black_pixels_T2
+        // Passing the address of the "arguments" structure, casted as void*
         if (pthread_create(&thread2, NULL, &ppm_black_pixels_T2, (void *) &arguments)) {
             fprintf(stderr, "Cannot create new thread : T2\n");
             return EXIT_FAILURE;
@@ -89,7 +95,6 @@ int main(int argc, char **argv) {
                black_pixels.flex_count_T1);
         printf("Second half of black-ish pixels in ppm image with T2 (accuracy = 10): %zu\n\n",
                black_pixels.flex_count_T2);
-
 
         printf("Multithreaded total of black pixels in ppm image: %zu\n\n",
                black_pixels.count_T1 + black_pixels.count_T2);

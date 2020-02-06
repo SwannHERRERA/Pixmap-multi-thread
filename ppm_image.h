@@ -30,10 +30,11 @@ typedef struct pixels_count {
     size_t flex_count_T2;
 } pixels_count;
 
+// Structure to pass the arguments to the threads
 typedef struct {
     ppm_image_t *img;
     pixels_count *black_pixels;
-} args;
+} thread_args;
 
 // Signatures
 bool pixel_equals(const pixel_t *self, const pixel_t *other);

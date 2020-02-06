@@ -1,12 +1,13 @@
 #include "ppm_image.h"
 
 // Check if two pixels are equal (same value for red, green and blue)
+// Returns boolean (logical verification)
 bool pixel_equals(const pixel_t *self, const pixel_t *other) {
     return self->green == other->green && self->red == other->red && self->blue == other->blue;
 }
 
 // Check if two pixels are equal but with a flexibility on the RGB intensity
-// Example : a pixel with r0, g0, b0 is black but, to the eye, so is one with 5, 5, 5
+// Example : a pixel with r = 0, g = 0, b = 0 is black but, to the eye, so is one with r = 5, g = 5, b = 5
 bool pixel_equals_flex(const pixel_t *p, const pixel_t *pbis, int accuracy) {
     return abs(p->red - pbis->red) <= accuracy &&
            abs(p->green - pbis->green) <= accuracy &&
@@ -197,11 +198,13 @@ void ppm_negative(ppm_image_t *img) {
     }
 }
 
+// Thread 1 function : count first half of black and black-ish pixels
 void *ppm_black_pixels_T1(void *arg) {
-    args *arguments = (args *) arg;
-
     printf("T1 created!\n"
            "Counting first half of black pixels with T1...\n");
+
+    // Casting back the argument to its original thread_args format
+    thread_args *arguments = (thread_args *) arg;
 
     pixel_t blackPixel = pixel_new(0, 0, 0);
     for (int i = 0; i < (arguments->img->totalPixels) / 2; i++) {
@@ -210,7 +213,6 @@ void *ppm_black_pixels_T1(void *arg) {
     }
     printf("T1 first half count: done!\n");
 
-
     printf("Counting first half of black-ish pixels with T1 (accuracy = 10)...\n");
     for (int i = 0; i < (arguments->img->totalPixels) / 2; i++) {
         if (pixel_equals_flex(&(arguments->img->data[i]), &blackPixel, 10))
@@ -218,17 +220,17 @@ void *ppm_black_pixels_T1(void *arg) {
     }
     printf("T1 first half flex count: done!\n");
 
-
     // End of the thread
     pthread_exit(NULL);
 }
 
-// Thread 2 function : count second half of black pixels
+// Thread 2 function : count second half of black and black-ish pixels
 void *ppm_black_pixels_T2(void *arg) {
-    args *arguments = (args *) arg;
-
     printf("T2 created!\n"
            "Counting first half of black pixels with T2...\n");
+
+    // Casting back the argument to its original thread_args format
+    thread_args *arguments = (thread_args *) arg;
 
     pixel_t blackPixel = pixel_new(0, 0, 0);
     for (size_t i = (arguments->img->totalPixels) / 2; i < arguments->img->totalPixels; i++) {
@@ -237,14 +239,12 @@ void *ppm_black_pixels_T2(void *arg) {
     }
     printf("T2 second half count: done!\n");
 
-
     printf("Counting second half of black-ish pixels with T2 (accuracy = 10)...\n");
     for (size_t i = (arguments->img->totalPixels) / 2; i < arguments->img->totalPixels; i++) {
         if (pixel_equals_flex(&(arguments->img->data[i]), &blackPixel, 10))
             arguments->black_pixels->flex_count_T2++;
     }
     printf("T2 first half flex count: done!\n");
-
 
     // End of the thread
     pthread_exit(NULL);
