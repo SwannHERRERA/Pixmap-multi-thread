@@ -23,8 +23,8 @@ int main(int argc, char **argv) {
     ppm_image_t *img = ppm_malloc(filePath);
     printf("Done!\n"
            "Name: %s\n"
-           "Width: %d\n"
-           "Height: %d\n"
+           "Width: %lu\n"
+           "Height: %lu\n"
            "totalPixels: %zu\n\n", basename(filePath), img->width, img->height, img->totalPixels);
 
     printf("Reading pixel x:5, y:128...\n");

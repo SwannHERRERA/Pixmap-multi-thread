@@ -48,8 +48,8 @@ size_t ppm_image_t_totalPixels(const ppm_image_t *ppmImage) {
 size_t ppm_black_pixels(const ppm_image_t *img) {
     pixel_t blackPixel = pixel_new(0, 0, 0);
     size_t nb_black_pixels = 0;
-    for (int i = 0; i < img->totalPixels; ++i) {
-        if (pixel_equals(&img->data[i], &blackPixel)) {
+    for (size_t i = 0; i < img->totalPixels; ++i) {
+        if (pixel_equals(&img->data[i], &blackPixel))
             nb_black_pixels++;
         }
     }
@@ -60,8 +60,8 @@ size_t ppm_black_pixels(const ppm_image_t *img) {
 size_t ppm_black_pixels_flex(const ppm_image_t *img, int accuracy) {
     pixel_t blackPixel = pixel_new(0, 0, 0);
     size_t nb_black_pixels = 0;
-    for (int i = 0; i < img->totalPixels; ++i) {
-        if (pixel_equals_flex(&img->data[i], &blackPixel, accuracy)) {
+    for (size_t i = 0; i < img->totalPixels; ++i) {
+        if (pixel_equals_flex(&img->data[i], &blackPixel, accuracy))
             nb_black_pixels++;
         }
     }
@@ -113,7 +113,7 @@ ppm_image_t *ppm_malloc(const char *pathname) {
     fread(&charInc, sizeof(char), 1, fp);
 
     // Read the two next characters (height and width)
-    fscanf(fp, "%d %d", &img->height, &img->width);
+    fscanf(fp, "%lu %lu", &img->height, &img->width);
     // Multiply to get the image's total number of pixels
     img->totalPixels = img->height * img->width;
 
@@ -148,12 +148,12 @@ void ppm_image_save(const char *pathname, const ppm_image_t *img) {
     assert(fp ? 1 : fprintf(stderr, "Can't create file: %s\n", newPath));
 
     // Get the original image's dimensions and store them into the negative version's.
-    sprintf(heightCopy, "%d", img->height);
-    sprintf(widthCopy, "%d", img->width);
+    sprintf(heightCopy, "%lu", img->height);
+    sprintf(widthCopy, "%lu", img->width);
 
     // Write the negative image header (format, height, width and '255')
     // Check if the return value (total number of written characters) matches the number of characters in the original image
-    assert(fprintf(fp, "P6\n%d %d\n255\n", img->height, img->width) == 9 + strlen(heightCopy) + strlen(widthCopy) ? 1 :
+    assert(fprintf(fp, "P6\n%lu %lu\n255\n", img->height, img->width) == 9 + strlen(heightCopy) + strlen(widthCopy) ? 1 :
            fprintf(stderr, "Error while writing header to file\n"));
 
     // Write the pixels on the copied image
@@ -168,7 +168,7 @@ void ppm_image_save(const char *pathname, const ppm_image_t *img) {
 
 // Bit by bit inversion of all the image's pixels (create a negative version of the image)
 void ppm_negative(ppm_image_t *img) {
-    for (int i = 0; i < img->totalPixels; ++i) {
+    for (size_t i = 0; i < img->totalPixels; ++i) {
         img->data[i] = pixel_invert(&img->data[i]);
     }
 }
@@ -182,16 +182,16 @@ void *ppm_black_pixels_T1(void *arg) {
     thread_args *arguments = (thread_args *) arg;
 
     pixel_t blackPixel = pixel_new(0, 0, 0);
-    for (int i = 0; i < (arguments->img->totalPixels) / 2; i++) {
-        if (pixel_equals(&(arguments->img->data[i]), &blackPixel)) {
+    for (size_t i = 0; i < (arguments->img->totalPixels) / 2; i++) {
+        if (pixel_equals(&(arguments->img->data[i]), &blackPixel))
             arguments->black_pixels->count_T1++;
         }
     }
     printf("T1 first half count: done!\n");
 
     printf("Counting first half of black-ish pixels with T1 (accuracy = 10)...\n");
-    for (int i = 0; i < (arguments->img->totalPixels) / 2; i++) {
-        if (pixel_equals_flex(&(arguments->img->data[i]), &blackPixel, 10)) {
+    for (size_t i = 0; i < (arguments->img->totalPixels) / 2; i++) {
+        if (pixel_equals_flex(&(arguments->img->data[i]), &blackPixel, 10))
             arguments->black_pixels->flex_count_T1++;
         }
     }

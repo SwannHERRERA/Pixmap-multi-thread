@@ -19,7 +19,7 @@ typedef struct {
 
 // Structure representing the image
 typedef struct {
-    int height, width;
+    size_t height, width;
     size_t totalPixels; // biggest type to store the unknown and possibly big total number
     pixel_t *data; // dynamic array of pixels
 } ppm_image_t;
