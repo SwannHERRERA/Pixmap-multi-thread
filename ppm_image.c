@@ -52,7 +52,7 @@ size_t ppm_black_pixels(const ppm_image_t *img) {
         if (pixel_equals(&img->data[i], &blackPixel))
             nb_black_pixels++;
         }
-    }
+
     return nb_black_pixels;
 }
 
@@ -64,7 +64,6 @@ size_t ppm_black_pixels_flex(const ppm_image_t *img, int accuracy) {
         if (pixel_equals_flex(&img->data[i], &blackPixel, accuracy))
             nb_black_pixels++;
         }
-    }
     return nb_black_pixels;
 }
 
@@ -153,7 +152,7 @@ void ppm_image_save(const char *pathname, const ppm_image_t *img) {
 
     // Write the negative image header (format, height, width and '255')
     // Check if the return value (total number of written characters) matches the number of characters in the original image
-    assert(fprintf(fp, "P6\n%lu %lu\n255\n", img->height, img->width) == 9 + strlen(heightCopy) + strlen(widthCopy) ? 1 :
+    assert((unsigned int)fprintf(fp, "P6\n%lu %lu\n255\n", img->height, img->width) == 9 + strlen(heightCopy) + strlen(widthCopy) ? 1 :
            fprintf(stderr, "Error while writing header to file\n"));
 
     // Write the pixels on the copied image
@@ -186,7 +185,6 @@ void *ppm_black_pixels_T1(void *arg) {
         if (pixel_equals(&(arguments->img->data[i]), &blackPixel))
             arguments->black_pixels->count_T1++;
         }
-    }
     printf("T1 first half count: done!\n");
 
     printf("Counting first half of black-ish pixels with T1 (accuracy = 10)...\n");
@@ -194,7 +192,6 @@ void *ppm_black_pixels_T1(void *arg) {
         if (pixel_equals_flex(&(arguments->img->data[i]), &blackPixel, 10))
             arguments->black_pixels->flex_count_T1++;
         }
-    }
     printf("T1 first half flex count: done!\n");
 
     // End of the thread
