@@ -49,8 +49,9 @@ size_t ppm_black_pixels(const ppm_image_t *img) {
     pixel_t blackPixel = pixel_new(0, 0, 0);
     size_t nb_black_pixels = 0;
     for (int i = 0; i < img->totalPixels; ++i) {
-        if (pixel_equals(&img->data[i], &blackPixel))
+        if (pixel_equals(&img->data[i], &blackPixel)) {
             nb_black_pixels++;
+        }
     }
     return nb_black_pixels;
 }
@@ -60,8 +61,9 @@ size_t ppm_black_pixels_flex(const ppm_image_t *img, int accuracy) {
     pixel_t blackPixel = pixel_new(0, 0, 0);
     size_t nb_black_pixels = 0;
     for (int i = 0; i < img->totalPixels; ++i) {
-        if (pixel_equals_flex(&img->data[i], &blackPixel, accuracy))
+        if (pixel_equals_flex(&img->data[i], &blackPixel, accuracy)) {
             nb_black_pixels++;
+        }
     }
     return nb_black_pixels;
 }
@@ -79,10 +81,7 @@ pixel_t *ppm_image_t_data(const ppm_image_t *ppmImage) {
 
 // Get a pixel of the image, depending on x and y coordinates
 pixel_t ppm_pixel(const ppm_image_t *img, size_t x, size_t y) {
-    if (x >= img->height || y >= img->width) {
-        fprintf(stderr, "Error! x,y out of range!\n");
-        exit(EXIT_FAILURE);
-    }
+    assert((x < img->height && y < img->width) ? 1 : !fprintf(stderr, "Error! x,y out of range!\n"));
     return img->data[x + img->width * y];
 }
 
@@ -94,34 +93,24 @@ pixel_t pixel_invert(const pixel_t *p) {
 
 // Load the image data into the structure
 ppm_image_t *ppm_malloc(const char *pathname) {
-    char magicNumber[2];
+    char magicNumber[2], charInc;
     ppm_image_t *img;
     FILE *fp;
 
     // Open the binary file in reading mode
     fp = fopen(pathname, "rb");
-    if (!fp) { // Check if the file has correctly been open
-        fprintf(stderr, "Can't open file: %s\n", pathname);
-        exit(EXIT_FAILURE);
-    }
-
+    assert(fp ? 1 : fprintf(stderr, "Can't open file: %s\n", pathname));
     // Read the first two characters of the file
     // Check if the image format is P6
     fscanf(fp, "%c%c", magicNumber, magicNumber + 1);
-    if (magicNumber[0] != 'P' || magicNumber[1] != '6') {
-        fprintf(stderr, "Wrong format!\n");
-        exit(EXIT_FAILURE);
-    }
+    assert((magicNumber[0] == 'P' && magicNumber[1] == '6') ? 1 : !fprintf(stderr, "Wrong format!\n"));
 
     // Allocate the size of the image structure
     img = malloc(sizeof(ppm_image_t));
-    if (img == NULL) { // Check if the memory has correctly been allocated
-        fprintf(stderr, "Error allocating memory for img structure.\n");
-        exit(EXIT_FAILURE);
-    }
+    assert(img != NULL ? 1 : fprintf(stderr, "Error allocating memory for img structure.\n"));
 
     // Move the position indicator the size of one character (handles both the space and return characters)
-    fseek(fp, sizeof(char), SEEK_CUR);
+    fread(&charInc, sizeof(char), 1, fp);
 
     // Read the two next characters (height and width)
     fscanf(fp, "%d %d", &img->height, &img->width);
@@ -129,7 +118,7 @@ ppm_image_t *ppm_malloc(const char *pathname) {
     img->totalPixels = img->height * img->width;
 
     // Move the position indicator the size of one character (handles both the space and return characters)
-    fseek(fp, sizeof(char), SEEK_CUR);
+    fread(&charInc, sizeof(char), 1, fp);
 
     // Keep moving the position indicator until the next return character
     while (getc(fp) != '\n');
@@ -138,18 +127,16 @@ ppm_image_t *ppm_malloc(const char *pathname) {
     img->data = malloc(img->height * img->width * sizeof(pixel_t));
     // Store the pixels array into the structure
     // Check if the return value (the third parameters) matches the number of number of pixels
-    if (fread(img->data, sizeof(pixel_t), img->height * img->width, fp) != img->height * img->width) {
-        fprintf(stderr, "Error while reading image\n");
-        exit(EXIT_FAILURE);
-    }
+    assert(fread(img->data, sizeof(pixel_t), img->height * img->width, fp) == img->height * img->width ? 1 :
+           fprintf(stderr, "Error while reading image\n"));
 
     return img;
 }
 
 // Save the copied negative image
 void ppm_image_save(const char *pathname, const ppm_image_t *img) {
-    // Allocate the size of the new path string (old path + 9 for "negative_")
-    char *newPath = malloc((strlen(pathname) + 9) * sizeof(char));
+    // Allocate the size of the new path string (old path + 10 for "negative_" & '\0')
+    char *newPath = malloc((strlen(pathname) + 10) * sizeof(char));
     char heightCopy[5], widthCopy[5]; // array of 4 + '\0' : supposing the image's longest side won't be more than 9999 px
 
     // Create the new path
@@ -158,10 +145,7 @@ void ppm_image_save(const char *pathname, const ppm_image_t *img) {
 
     // Open the binary file in writing mode
     FILE *fp = fopen(newPath, "wb");
-    if (!fp) { // Check if the file has correctly been open
-        fprintf(stderr, "Can't create file: %s\n", newPath);
-        exit(EXIT_FAILURE);
-    }
+    assert(fp ? 1 : fprintf(stderr, "Can't create file: %s\n", newPath));
 
     // Get the original image's dimensions and store them into the negative version's.
     sprintf(heightCopy, "%d", img->height);
@@ -169,17 +153,14 @@ void ppm_image_save(const char *pathname, const ppm_image_t *img) {
 
     // Write the negative image header (format, height, width and '255')
     // Check if the return value (total number of written characters) matches the number of characters in the original image
-    if (fprintf(fp, "P6\n%d %d\n255\n", img->height, img->width) != 9 + strlen(heightCopy) + strlen(widthCopy)) {
-        fprintf(stderr, "Error while writing header to file\n");
-        exit(EXIT_FAILURE);
-    }
+    assert(fprintf(fp, "P6\n%d %d\n255\n", img->height, img->width) == 9 + strlen(heightCopy) + strlen(widthCopy) ? 1 :
+           fprintf(stderr, "Error while writing header to file\n"));
 
     // Write the pixels on the copied image
-    if (fwrite(img->data, sizeof(pixel_t), img->totalPixels, fp) != img->totalPixels) {
-        fprintf(stderr, "Error while writing pixels to file\n");
-        exit(EXIT_FAILURE);
-    }
+    assert(fwrite(img->data, sizeof(pixel_t), img->totalPixels, fp) == img->totalPixels ? 1 :
+           fprintf(stderr, "Error while writing pixels to file\n"));
 
+    free(newPath);
     // Close the file
     fclose(fp);
 }
@@ -187,14 +168,8 @@ void ppm_image_save(const char *pathname, const ppm_image_t *img) {
 
 // Bit by bit inversion of all the image's pixels (create a negative version of the image)
 void ppm_negative(ppm_image_t *img) {
-    int i;
-    pixel_t pixel;
-
-    for (i = 0; i < img->totalPixels; ++i) {
-        pixel = pixel_invert(img->data + i);
-        img->data[i].red = pixel.red;
-        img->data[i].green = pixel.green;
-        img->data[i].blue = pixel.blue;
+    for (int i = 0; i < img->totalPixels; ++i) {
+        img->data[i] = pixel_invert(&img->data[i]);
     }
 }
 
@@ -208,15 +183,17 @@ void *ppm_black_pixels_T1(void *arg) {
 
     pixel_t blackPixel = pixel_new(0, 0, 0);
     for (int i = 0; i < (arguments->img->totalPixels) / 2; i++) {
-        if (pixel_equals(&(arguments->img->data[i]), &blackPixel))
+        if (pixel_equals(&(arguments->img->data[i]), &blackPixel)) {
             arguments->black_pixels->count_T1++;
+        }
     }
     printf("T1 first half count: done!\n");
 
     printf("Counting first half of black-ish pixels with T1 (accuracy = 10)...\n");
     for (int i = 0; i < (arguments->img->totalPixels) / 2; i++) {
-        if (pixel_equals_flex(&(arguments->img->data[i]), &blackPixel, 10))
+        if (pixel_equals_flex(&(arguments->img->data[i]), &blackPixel, 10)) {
             arguments->black_pixels->flex_count_T1++;
+        }
     }
     printf("T1 first half flex count: done!\n");
 
@@ -234,18 +211,25 @@ void *ppm_black_pixels_T2(void *arg) {
 
     pixel_t blackPixel = pixel_new(0, 0, 0);
     for (size_t i = (arguments->img->totalPixels) / 2; i < arguments->img->totalPixels; i++) {
-        if (pixel_equals(&(arguments->img->data[i]), &blackPixel))
+        if (pixel_equals(&(arguments->img->data[i]), &blackPixel)) {
             arguments->black_pixels->count_T2++;
+        }
     }
     printf("T2 second half count: done!\n");
 
     printf("Counting second half of black-ish pixels with T2 (accuracy = 10)...\n");
     for (size_t i = (arguments->img->totalPixels) / 2; i < arguments->img->totalPixels; i++) {
-        if (pixel_equals_flex(&(arguments->img->data[i]), &blackPixel, 10))
+        if (pixel_equals_flex(&(arguments->img->data[i]), &blackPixel, 10)) {
             arguments->black_pixels->flex_count_T2++;
+        }
     }
     printf("T2 first half flex count: done!\n");
 
     // End of the thread
     pthread_exit(NULL);
+}
+
+void ppm_destroy(ppm_image_t *ppmImage) {
+    free(ppmImage->data);
+    free(ppmImage);
 }
